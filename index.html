@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Arbeitszeit"/>
+<title>Arbeitszeiterfassung</title>
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e8e6e0;
+    --text: #1a1a18;
+    --muted: #888880;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5ee;
+    --danger: #c0392b;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Georgia', serif;
+    --font-ui: system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); font-family: var(--font-ui); color: var(--text); min-height: 100vh; }
+  
+  /* Top bar */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+  .topbar-title { font-family: var(--font); font-size: 17px; font-weight: normal; flex: 1; }
+  .sync-btn { font-size: 12px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; }
+  .sync-btn.syncing { color: var(--accent); border-color: var(--accent); }
+  .user-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; flex-shrink: 0; }
+
+  /* Nav tabs */
+  .nav { display: flex; background: var(--surface); border-top: 1px solid var(--border); position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px; border: none; background: transparent; cursor: pointer; color: var(--muted); font-size: 10px; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-icon { font-size: 20px; line-height: 1; }
+
+  /* Content */
+  .content { padding: 16px; padding-bottom: 80px; max-width: 480px; margin: 0 auto; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+
+  /* Forms */
+  .field { margin-bottom: 12px; }
+  .field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }
+  .field input, .field select { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-size: 15px; color: var(--text); font-family: var(--font-ui); appearance: none; -webkit-appearance: none; }
+  .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Buttons */
+  .btn-primary { width: 100%; padding: 13px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 15px; cursor: pointer; font-family: var(--font-ui); }
+  .btn-primary:active { opacity: 0.85; }
+  .btn-sm { font-size: 12px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; }
+
+  /* Metrics */
+  .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 10px; text-align: center; }
+  .metric-val { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1; }
+  .metric-lbl { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  /* Entry list */
+  .entry { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .entry:last-child { border-bottom: none; }
+  .entry-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .entry-body { flex: 1; }
+  .entry-name { font-size: 14px; color: var(--text); }
+  .entry-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .entry-h { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .del-btn { font-size: 16px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px; line-height: 1; }
+
+  /* Bar chart */
+  .bar-item { margin-bottom: 10px; }
+  .bar-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+
+  /* Week grid */
+  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
+  .day-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px; text-align: center; min-height: 58px; }
+  .day-cell.today { border-color: var(--accent); }
+  .day-nm { font-size: 9px; color: var(--muted); margin-bottom: 2px; }
+  .day-n { font-size: 13px; font-weight: 600; }
+  .day-pip { height: 3px; border-radius: 2px; margin: 3px 0 1px; }
+  .day-h { font-size: 9px; color: var(--muted); }
+
+  /* Nav row */
+  .nav-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .nav-lbl { flex: 1; text-align: center; font-size: 15px; font-weight: 600; }
+
+  /* Color swatches */
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sw { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+  .sw.sel { border-color: var(--text); }
+
+  /* Section */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Login screen */
+  .login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 32px; text-align: center; }
+  .login-logo { font-family: var(--font); font-size: 28px; margin-bottom: 8px; }
+  .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 40px; }
+  .login-btn { padding: 14px 32px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 16px; cursor: pointer; width: 100%; max-width: 300px; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 200; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 32px 0; color: var(--muted); font-size: 14px; }
+
+  /* Date section header */
+  .date-hdr { font-size: 12px; color: var(--muted); font-weight: 600; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* Range inputs */
+  .range-card { background: var(--accent-light); border: 1px solid #b7dfc8; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login">
+  <div class="login-logo">Arbeitszeit</div>
+  <div class="login-sub">Primarschulgemeinde Weinfelden</div>
+  <button class="login-btn" onclick="signIn()">Mit Microsoft anmelden</button>
+  <p style="font-size:12px;color:var(--muted);margin-top:16px">Deine Daten werden in deinem OneDrive gespeichert.</p>
+</div>
+
+<div id="app-screen" style="display:none">
+  <div class="topbar">
+    <div class="topbar-title">Arbeitszeit</div>
+    <button class="sync-btn" id="sync-btn" onclick="syncNow()">Synchronisieren</button>
+    <div class="user-dot" id="user-dot" onclick="signOut()">?</div>
+  </div>
+
+  <div class="content">
+    <!-- ERFASSEN -->
+    <div class="section active" id="tab-erfassen">
+      <div class="card">
+        <div class="card-title">Neuer Eintrag</div>
+        <div class="field-row">
+          <div class="field"><label>Datum</label><input type="date" id="e-date"/></div>
+          <div class="field"><label>Stunden</label><input type="number" id="e-hours" min="0.25" max="24" step="0.25" value="1"/></div>
+        </div>
+        <div class="field"><label>Tätigkeitsbereich</label><select id="e-area"></select></div>
+        <div class="field"><label>Beschreibung (optional)</label><input type="text" id="e-desc" placeholder="Was hast du gemacht?"/></div>
+        <button class="btn-primary" onclick="addEntry()">Eintrag speichern</button>
+      </div>
+      <div id="today-entries"></div>
+    </div>
+
+    <!-- WOCHE -->
+    <div class="section" id="tab-woche">
+      <div class="nav-row">
+        <button class="btn-sm" onclick="wOff--;renderWoche()">‹</button>
+        <span class="nav-lbl" id="week-lbl"></span>
+        <button class="btn-sm" onclick="wOff++;renderWoche()">›</button>
+        <button class="btn-sm" onclick="wOff=0;renderWoche()">Heute</button>
+      </div>
+      <div class="metric-row" id="week-metrics"></div>
+      <div class="week-grid" id="week-grid"></div>
+      <div class="card"><div class="card-title">Details</div><div id="week-detail"></div></div>
+    </div>
+
+    <!-- MONAT -->
+    <div class="section" id="tab-monat">
+      <div class="nav-row">
+        <button class="btn-sm" onclick="mOff--;renderMonat()">‹</button>
+        <span class="nav-lbl" id="month-lbl"></span>
+        <button class="btn-sm" onclick="mOff++;renderMonat()">›</button>
+        <button class="btn-sm" onclick="mOff=0;renderMonat()">Heute</button>
+      </div>
+      <div class="metric-row" id="month-metrics"></div>
+      <div class="card"><div class="card-title">Nach Bereich</div><div id="month-bars"></div></div>
+    </div>
+
+    <!-- AUSWERTUNG -->
+    <div class="section" id="tab-auswertung">
+      <div class="range-card">
+        <div class="card-title" style="color:var(--accent)">Zeitraum-Analyse</div>
+        <div class="field-row">
+          <div class="field"><label>Von</label><input type="date" id="r-from"/></div>
+          <div class="field"><label>Bis</label><input type="date" id="r-to"/></div>
+        </div>
+        <button class="btn-primary" onclick="renderRange()">Auswerten</button>
+      </div>
+      <div id="range-result"></div>
+      <div class="card"><div class="card-title">Alle Bereiche gesamt</div><div id="all-bars"></div></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-sm" style="flex:1;padding:11px" onclick="exportCSV()">CSV exportieren</button>
+        <button class="btn-sm" style="flex:1;padding:11px" onclick="exportPDF()">PDF exportieren</button>
+      </div>
+    </div>
+
+    <!-- BEREICHE -->
+    <div class="section" id="tab-bereiche">
+      <div class="card">
+        <div class="card-title">Neuer Bereich</div>
+        <div class="field"><label>Name</label><input type="text" id="b-name" placeholder="z.B. Unterricht, Meetings..."/></div>
+        <div class="field"><label>Farbe</label><div class="swatches" id="swatches"></div></div>
+        <div class="field"><label>Ziel Stunden/Woche (optional)</label><input type="number" id="b-target" min="0" max="60" step="0.5" placeholder="0"/></div>
+        <button class="btn-primary" onclick="addArea()">Bereich erstellen</button>
+      </div>
+      <div id="area-list"></div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="sw('erfassen',this)"><span class="nav-icon">✏️</span>Erfassen</button>
+    <button class="nav-btn" onclick="sw('woche',this)"><span class="nav-icon">📅</span>Woche</button>
+    <button class="nav-btn" onclick="sw('monat',this)"><span class="nav-icon">📆</span>Monat</button>
+    <button class="nav-btn" onclick="sw('auswertung',this)"><span class="nav-icon">📊</span>Auswertung</button>
+    <button class="nav-btn" onclick="sw('bereiche',this)"><span class="nav-icon">🗂️</span>Bereiche</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── MSAL CONFIG ──────────────────────────────────────────────
+// WICHTIG: Ersetze CLIENT_ID_HIER mit deiner eigenen Client-ID!
+const MSAL_CONFIG = {
+  auth: {
+    clientId: '34cbcc59-807f-4a08-bc6f-4a83d209d63a',
+    authority: 'https://login.microsoftonline.com/91020d46-40a5-45b1-97ee-0245a44da351',
+    redirectUri: window.location.origin + window.location.pathname
+  },
+  cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
+};
+const SCOPES = ['Files.ReadWrite', 'User.Read'];
+const FILE_NAME = 'arbeitszeit_daten.json';
+const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
+
+// ── STATE ────────────────────────────────────────────────────
+const COLORS = ['#2d6a4f','#1a6b9e','#8b3a6b','#b5451b','#6b5ea8','#a07c20','#3a7d6b','#666660'];
+let selColor = COLORS[0], wOff = 0, mOff = 0, isSyncing = false;
+let S = {
+  areas: [
+    {id:'a1', name:'Unterricht', color:'#2d6a4f', target:20},
+    {id:'a2', name:'Meetings', color:'#1a6b9e', target:5},
+    {id:'a3', name:'Administration', color:'#8b3a6b', target:3}
+  ],
+  entries: []
+};
+let accessToken = null;
+
+// ── AUTH ─────────────────────────────────────────────────────
+async function signIn() {
+  try {
+    const resp = await msalApp.loginPopup({ scopes: SCOPES });
+    await afterLogin(resp.account);
+  } catch(e) {
+    toast('Anmeldung fehlgeschlagen: ' + e.message);
+  }
+}
+
+async function afterLogin(account) {
+  msalApp.setActiveAccount(account);
+  const initials = account.name ? account.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase() : '?';
+  document.getElementById('user-dot').textContent = initials;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  await getToken();
+  await loadFromOneDrive();
+  init();
+}
+
+async function getToken() {
+  const account = msalApp.getActiveAccount();
+  if (!account) return;
+  try {
+    const resp = await msalApp.acquireTokenSilent({ scopes: SCOPES, account });
+    accessToken = resp.accessToken;
+  } catch(e) {
+    const resp = await msalApp.acquireTokenPopup({ scopes: SCOPES });
+    accessToken = resp.accessToken;
+  }
+}
+
+function signOut() {
+  if (!confirm('Abmelden?')) return;
+  msalApp.logoutPopup();
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+// ── ONEDRIVE SYNC ────────────────────────────────────────────
+async function loadFromOneDrive() {
+  if (!accessToken) return;
+  try {
+    const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${FILE_NAME}:/content`, {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.areas) S = data;
+      toast('Daten geladen ✓');
+    }
+  } catch(e) { /* Datei existiert noch nicht – kein Problem */ }
+}
+
+async function saveToOneDrive() {
+  if (!accessToken) { save(); return; }
+  save();
+  isSyncing = true;
+  document.getElementById('sync-btn').textContent = 'Synchronisiert…';
+  document.getElementById('sync-btn').classList.add('syncing');
+  try {
+    await getToken();
+    await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${FILE_NAME}:/content`, {
+      method: 'PUT',
+      headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify(S)
+    });
+    toast('Gespeichert in OneDrive ✓');
+  } catch(e) {
+    toast('Offline – lokal gespeichert');
+  }
+  isSyncing = false;
+  document.getElementById('sync-btn').textContent = 'Synchronisieren';
+  document.getElementById('sync-btn').classList.remove('syncing');
+}
+
+async function syncNow() { await saveToOneDrive(); }
+
+// ── LOCAL STORAGE FALLBACK ───────────────────────────────────
+function save() { try { localStorage.setItem('aze_ms', JSON.stringify(S)); } catch(e) {} }
+function loadLocal() { try { const s = localStorage.getItem('aze_ms'); if(s) S = JSON.parse(s); } catch(e) {} }
+
+// ── INIT ─────────────────────────────────────────────────────
+function init() {
+  document.getElementById('e-date').value = today();
+  const now = new Date();
+  document.getElementById('r-from').value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  document.getElementById('r-to').value = today();
+  initSwatches();
+  updateSelects();
+  renderToday();
+  renderAreas();
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function today() { return new Date().toISOString().slice(0,10); }
+function area(id) { return S.areas.find(a => a.id === id); }
+function fmtDate(str) { return new Date(str+'T00:00:00').toLocaleDateString('de-CH',{weekday:'short',day:'numeric',month:'short'}); }
+const DAY = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function sw(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(tab==='woche') renderWoche();
+  if(tab==='monat') renderMonat();
+  if(tab==='auswertung') renderAuswertung();
+  if(tab==='bereiche') renderAreas();
+  if(tab==='erfassen') renderToday();
+}
+
+// ── BEREICHE ─────────────────────────────────────────────────
+function initSwatches() {
+  document.getElementById('swatches').innerHTML = COLORS.map(c =>
+    `<div class="sw${c===selColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}',this)"></div>`
+  ).join('');
+}
+function pickColor(c, el) {
+  selColor = c;
+  document.querySelectorAll('.sw').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function addArea() {
+  const n = document.getElementById('b-name').value.trim();
+  if(!n) return;
+  const t = parseFloat(document.getElementById('b-target').value) || 0;
+  S.areas.push({id:'a'+Date.now(), name:n, color:selColor, target:t});
+  document.getElementById('b-name').value = '';
+  document.getElementById('b-target').value = '';
+  saveToOneDrive(); renderAreas(); updateSelects();
+}
+function delArea(id) {
+  if(!confirm('Bereich löschen?')) return;
+  S.areas = S.areas.filter(a => a.id !== id);
+  saveToOneDrive(); renderAreas(); updateSelects();
+}
+function renderAreas() {
+  initSwatches();
+  const el = document.getElementById('area-list');
+  if(!S.areas.length) { el.innerHTML = '<div class="empty">Noch keine Bereiche.</div>'; return; }
+  el.innerHTML = S.areas.map(a => {
+    const h = S.entries.filter(e => e.areaId===a.id).reduce((s,e)=>s+e.hours,0);
+    return `<div class="card" style="padding:12px 16px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${a.color};flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:14px">${a.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${h.toFixed(1)} h gesamt${a.target?` · Ziel ${a.target} h/Wo`:''}</div>
+        </div>
+        <button class="del-btn" onclick="delArea('${a.id}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateSelects() {
+  const opts = S.areas.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  document.getElementById('e-area').innerHTML = opts;
+  const ra = document.getElementById('r-area');
+  if(ra) ra.innerHTML = '<option value="">Alle</option>' + opts;
+}
+
+// ── EINTRÄGE ─────────────────────────────────────────────────
+function addEntry() {
+  const date = document.getElementById('e-date').value || today();
+  const areaId = document.getElementById('e-area').value;
+  const hours = parseFloat(document.getElementById('e-hours').value);
+  const desc = document.getElementById('e-desc').value.trim();
+  if(!areaId || !hours) return;
+  S.entries.push({id:'e'+Date.now(), date, areaId, hours, desc});
+  document.getElementById('e-hours').value = '1';
+  document.getElementById('e-desc').value = '';
+  saveToOneDrive(); renderToday();
+}
+function delEntry(id) {
+  S.entries = S.entries.filter(e => e.id !== id);
+  saveToOneDrive(); renderToday();
+}
+function renderToday() {
+  const el = document.getElementById('today-entries');
+  const t = today();
+  const es = S.entries.filter(e => e.date===t).sort((a,b)=>b.id.localeCompare(a.id));
+  if(!es.length) { el.innerHTML=''; return; }
+  const tot = es.reduce((s,e)=>s+e.hours,0);
+  el.innerHTML = `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="card-title" style="margin:0">Heute</div>
+    <div style="font-size:14px;font-weight:600">${tot.toFixed(1)} h</div></div>` +
+    es.map(e => {
+      const a = area(e.areaId); if(!a) return '';
+      return `<div class="entry">
+        <div class="entry-dot" style="background:${a.color}"></div>
+        <div class="entry-body">
+          <div class="entry-name">${a.name}</div>
+          ${e.desc ? `<div class="entry-sub">${e.desc}</div>` : ''}
+        </div>
+        <div class="entry-h">${e.hours.toFixed(2)} h</div>
+        <button class="del-btn" onclick="delEntry('${e.id}')">×</button>
+      </div>`;
+    }).join('') + '</div>';
+}
+
+// ── WOCHENANSICHT ────────────────────────────────────────────
+function getWeekDates(off) {
+  const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1 + off*7);
+  return Array.from({length:7},(_,i)=>{ const x=new Date(d); x.setDate(d.getDate()+i); return x.toISOString().slice(0,10); });
+}
+function renderWoche() {
+  const dates = getWeekDates(wOff);
+  const d0=new Date(dates[0]), d1=new Date(dates[6]);
+  document.getElementById('week-lbl').textContent =
+    `${d0.toLocaleDateString('de-CH',{day:'numeric',month:'short'})} – ${d1.toLocaleDateString('de-CH',{day:'numeric',month:'short'})}`;
+  const t = today();
+  const inW = S.entries.filter(e=>dates.includes(e.date));
+  const tot = inW.reduce((s,e)=>s+e.hours,0);
+  const dSet = new Set(inW.map(e=>e.date)).size;
+  document.getElementById('week-metrics').innerHTML = `
+    <div class="metric"><div class="metric-val">${tot.toFixed(1)}</div><div class="metric-lbl">Stunden</div></div>
+    <div class="metric"><div class="metric-val">${dSet}</div><div class="metric-lbl">Tage</div></div>
+    <div class="metric"><div class="metric-val">${dSet?(tot/dSet).toFixed(1):0}</div><div class="metric-lbl">Ø/Tag</div></div>`;
+  document.getElementById('week-grid').innerHTML = dates.map((date,i) => {
+    const es = S.entries.filter(e=>e.date===date);
+    const dh = es.reduce((s,e)=>s+e.hours,0);
+    const areas = S.areas.filter(a=>es.some(e=>e.areaId===a.id));
+    return `<div class="day-cell${date===t?' today':''}">
+      <div class="day-nm">${DAY[i]}</div>
+      <div class="day-n">${new Date(date+'T00:00').getDate()}</div>
+      ${areas.slice(0,2).map(a=>`<div class="day-pip" style="background:${a.color}"></div>`).join('')}
+      ${dh>0?`<div class="day-h">${dh.toFixed(1)}h</div>`:''}
+    </div>`;
+  }).join('');
+  const detail = inW.sort((a,b)=>b.date.localeCompare(a.date));
+  if(!detail.length) { document.getElementById('week-detail').innerHTML='<div class="empty">Keine Einträge diese Woche.</div>'; return; }
+  const byDate = {};
+  detail.forEach(e=>{ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+  document.getElementById('week-detail').innerHTML = Object.keys(byDate).sort((a,b)=>b.localeCompare(a)).map(date => {
+    const es=byDate[date], dt=es.reduce((s,e)=>s+e.hours,0);
+    return `<div class="date-hdr">${fmtDate(date)} · ${dt.toFixed(1)} h</div>` +
+      es.map(e=>{ const a=area(e.areaId); if(!a) return '';
+        return `<div class="entry"><div class="entry-dot" style="background:${a.color}"></div>
+          <div class="entry-body"><div class="entry-name" style="font-size:13px">${a.name}${e.desc?` – ${e.desc}`:''}</div></div>
+          <div class="entry-h">${e.hours.toFixed(2)} h</div></div>`;
+      }).join('');
+  }).join('');
+}
+
+// ── MONATSANSICHT ────────────────────────────────────────────
+function renderMonat() {
+  const now = new Date(); now.setMonth(now.getMonth()+mOff);
+  const y=now.getFullYear(), m=now.getMonth();
+  document.getElementById('month-lbl').textContent =
+    new Date(y,m,1).toLocaleDateString('de-CH',{month:'long',year:'numeric'});
+  const prefix = `${y}-${String(m+1).padStart(2,'0')}`;
+  const inM = S.entries.filter(e=>e.date.startsWith(prefix));
+  const tot = inM.reduce((s,e)=>s+e.hours,0);
+  const dSet = new Set(inM.map(e=>e.date)).size;
+  document.getElementById('month-metrics').innerHTML = `
+    <div class="metric"><div class="metric-val">${tot.toFixed(1)}</div><div class="metric-lbl">Stunden</div></div>
+    <div class="metric"><div class="metric-val">${dSet}</div><div class="metric-lbl">Tage</div></div>
+    <div class="metric"><div class="metric-val">${dSet?(tot/dSet).toFixed(1):0}</div><div class="metric-lbl">Ø/Tag</div></div>`;
+  const byArea = {}; S.areas.forEach(a=>byArea[a.id]=0); inM.forEach(e=>{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });
+  const sorted = S.areas.map(a=>({a,h:byArea[a.id]||0})).sort((x,y2)=>y2.h-x.h);
+  const maxH = Math.max(...sorted.map(x=>x.h),1);
+  document.getElementById('month-bars').innerHTML = sorted.map(({a,h})=>{
+    const pct = Math.round(tot?h/tot*100:0);
+    return `<div class="bar-item"><div class="bar-top"><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"></span>${a.name}</span><span style="color:var(--muted)">${h.toFixed(1)} h (${pct}%)</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(h/maxH*100)}%;background:${a.color}"></div></div></div>`;
+  }).join('') || '<div class="empty">Keine Einträge.</div>';
+}
+
+// ── AUSWERTUNG ───────────────────────────────────────────────
+function renderAuswertung() {
+  const byArea = {}; S.areas.forEach(a=>byArea[a.id]=0); S.entries.forEach(e=>{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });
+  const tot = S.entries.reduce((s,e)=>s+e.hours,0);
+  const sorted = S.areas.map(a=>({a,h:byArea[a.id]||0})).sort((x,y)=>y.h-x.h);
+  const maxH = Math.max(...sorted.map(x=>x.h),1);
+  document.getElementById('all-bars').innerHTML = sorted.map(({a,h})=>{
+    const pct=Math.round(tot?h/tot*100:0);
+    return `<div class="bar-item"><div class="bar-top"><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"></span>${a.name}</span><span style="color:var(--muted)">${h.toFixed(1)} h (${pct}%)</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(h/maxH*100)}%;background:${a.color}"></div></div></div>`;
+  }).join('') || '<div class="empty">Noch keine Einträge.</div>';
+}
+
+function renderRange() {
+  const from = document.getElementById('r-from').value;
+  const to = document.getElementById('r-to').value;
+  if(!from||!to) return;
+  let es = S.entries.filter(e=>e.date>=from&&e.date<=to);
+  const tot = es.reduce((s,e)=>s+e.hours,0);
+  const dSet = new Set(es.map(e=>e.date)).size;
+  const diffDays = Math.round((new Date(to)-new Date(from))/(1000*60*60*24))+1;
+  const byArea={}; S.areas.forEach(a=>byArea[a.id]=0); es.forEach(e=>{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });
+  const maxH = Math.max(...Object.values(byArea),1);
+  document.getElementById('range-result').innerHTML = `
+    <div class="metric-row">
+      <div class="metric"><div class="metric-val">${tot.toFixed(1)}</div><div class="metric-lbl">Stunden</div></div>
+      <div class="metric"><div class="metric-val">${dSet}/${diffDays}</div><div class="metric-lbl">Tage erf./ges.</div></div>
+      <div class="metric"><div class="metric-val">${dSet?(tot/dSet).toFixed(1):0}</div><div class="metric-lbl">Ø/Tag</div></div>
+    </div>
+    <div class="card"><div class="card-title">Bereiche im Zeitraum</div>` +
+    S.areas.map(a=>{ const h=byArea[a.id]||0; const pct=Math.round(tot?h/tot*100:0);
+      return `<div class="bar-item"><div class="bar-top"><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"></span>${a.name}</span><span style="color:var(--muted)">${h.toFixed(1)} h (${pct}%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(h/maxH*100)}%;background:${a.color}"></div></div></div>`;
+    }).join('') + '</div>';
+}
+
+// ── EXPORT ───────────────────────────────────────────────────
+function exportCSV() {
+  const rows = [['Datum','Bereich','Stunden','Beschreibung']];
+  [...S.entries].sort((a,b)=>a.date.localeCompare(b.date)).forEach(e => {
+    const a = area(e.areaId);
+    rows.push([e.date, a?a.name:'', e.hours.toFixed(2), e.desc||'']);
+  });
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='arbeitszeit.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPDF() {
+  // Ohne externe Bibliothek: einfaches Drucken
+  const lines = [];
+  lines.push('<html><head><meta charset="utf-8"><style>body{font-family:sans-serif;padding:24px;font-size:13px}h1{font-size:18px;margin-bottom:4px}h2{font-size:14px;margin:20px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:5px 8px;border-bottom:1px solid #eee}th{font-weight:600;color:#555}</style></head><body>');
+  lines.push(`<h1>Arbeitszeiterfassung</h1><p style="color:#888">Exportiert: ${new Date().toLocaleDateString('de-CH')}</p>`);
+  lines.push('<h2>Zusammenfassung</h2><table><tr><th>Bereich</th><th>Stunden</th></tr>');
+  const byArea={}; S.areas.forEach(a=>byArea[a.id]=0); S.entries.forEach(e=>{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });
+  S.areas.forEach(a=>lines.push(`<tr><td>${a.name}</td><td>${(byArea[a.id]||0).toFixed(1)} h</td></tr>`));
+  lines.push(`<tr><td><strong>Gesamt</strong></td><td><strong>${S.entries.reduce((s,e)=>s+e.hours,0).toFixed(1)} h</strong></td></tr></table>`);
+  lines.push('<h2>Alle Einträge</h2><table><tr><th>Datum</th><th>Bereich</th><th>Stunden</th><th>Beschreibung</th></tr>');
+  [...S.entries].sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{
+    const a=area(e.areaId);
+    lines.push(`<tr><td>${e.date}</td><td>${a?a.name:''}</td><td>${e.hours.toFixed(2)}</td><td>${e.desc||''}</td></tr>`);
+  });
+  lines.push('</table></body></html>');
+  const w = window.open('','_blank');
+  w.document.write(lines.join(''));
+  w.document.close();
+  w.print();
+}
+
+// ── STARTUP ──────────────────────────────────────────────────
+loadLocal();
+(async () => {
+  await msalApp.initialize();
+  const accounts = msalApp.getAllAccounts();
+  if(accounts.length > 0) {
+    await afterLogin(accounts[0]);
+  }
+})();
+</script>
+</body>
+</html>
