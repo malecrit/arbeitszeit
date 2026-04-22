@@ -235,7 +235,7 @@ const MSAL_CONFIG = {
 };
 const SCOPES = ['Files.ReadWrite', 'User.Read'];
 const FILE_NAME = 'arbeitszeit_daten.json';
-const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
+let msalApp;
 
 // ── STATE ────────────────────────────────────────────────────
 const COLORS = ['#2d6a4f','#1a6b9e','#8b3a6b','#b5451b','#6b5ea8','#a07c20','#3a7d6b','#666660'];
@@ -601,6 +601,7 @@ function exportPDF() {
 // ── STARTUP ──────────────────────────────────────────────────
 loadLocal();
 (async () => {
+  msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
   await msalApp.initialize();
   const accounts = msalApp.getAllAccounts();
   if(accounts.length > 0) {
