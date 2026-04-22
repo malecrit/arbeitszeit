@@ -253,6 +253,7 @@ let accessToken = null;
 // ── AUTH ─────────────────────────────────────────────────────
 async function signIn() {
   try {
+    if(!msalApp) msalApp = new msal.PublicClientApplication(MSAL_CONFIG);
     const resp = await msalApp.loginPopup({ scopes: SCOPES });
     await afterLogin(resp.account);
   } catch(e) {
