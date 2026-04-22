@@ -1,0 +1,631 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2487.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 10.0px 0.0px; font: 14.0px 'Helvetica Neue'; color: #1f1e1d; -webkit-text-stroke: #1f1e1d}
+    p.p2 {margin: 0.0px 0.0px 10.0px 0.0px; font: 14.0px 'Helvetica Neue'; color: #1f1e1d; -webkit-text-stroke: #1f1e1d; min-height: 16.0px}
+    p.p3 {margin: 0.0px 0.0px 10.0px 0.0px; font: 13.0px 'Helvetica Neue'}
+    span.s1 {font-kerning: none}
+    span.s2 {font: 14.0px 'Helvetica Neue'; font-kerning: none; color: #1f1e1d; -webkit-text-stroke: 0px #1f1e1d}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="de"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta charset="UTF-8"/&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-capable" content="yes"/&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-status-bar-style" content="default"/&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-title" content="Arbeitszeit"/&gt;</span></p>
+<p class="p1"><span class="s1">&lt;title&gt;Arbeitszeiterfassung&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1">&lt;script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>:root {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--bg: #f5f4f0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--surface: #ffffff;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--border: #e8e6e0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--text: #1a1a18;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--muted: #888880;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--accent: #2d6a4f;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--accent-light: #e8f5ee;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--danger: #c0392b;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--radius: 12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--radius-sm: 8px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--font: 'Georgia', serif;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>--font-ui: system-ui, -apple-system, sans-serif;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>body { background: var(--bg); font-family: var(--font-ui); color: var(--text); min-height: 100vh; }</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">  </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Top bar */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.topbar-title { font-family: var(--font); font-size: 17px; font-weight: normal; flex: 1; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.sync-btn { font-size: 12px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.sync-btn.syncing { color: var(--accent); border-color: var(--accent); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.user-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; flex-shrink: 0; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Nav tabs */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav { display: flex; background: var(--surface); border-top: 1px solid var(--border); position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px; border: none; background: transparent; cursor: pointer; color: var(--muted); font-size: 10px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav-btn.active { color: var(--accent); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav-icon { font-size: 20px; line-height: 1; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Content */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.content { padding: 16px; padding-bottom: 80px; max-width: 480px; margin: 0 auto; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Cards */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Forms */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.field { margin-bottom: 12px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.field input, .field select { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-size: 15px; color: var(--text); font-family: var(--font-ui); appearance: none; -webkit-appearance: none; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Buttons */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.btn-primary { width: 100%; padding: 13px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 15px; cursor: pointer; font-family: var(--font-ui); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.btn-primary:active { opacity: 0.85; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.btn-sm { font-size: 12px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--muted); cursor: pointer; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Metrics */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 10px; text-align: center; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.metric-val { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.metric-lbl { font-size: 10px; color: var(--muted); margin-top: 4px; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Entry list */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry:last-child { border-bottom: none; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry-body { flex: 1; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry-name { font-size: 14px; color: var(--text); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.entry-h { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.del-btn { font-size: 16px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px; line-height: 1; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Bar chart */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.bar-item { margin-bottom: 10px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.bar-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.bar-fill { height: 100%; border-radius: 3px; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Week grid */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.day-cell { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px; text-align: center; min-height: 58px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.day-cell.today { border-color: var(--accent); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.day-nm { font-size: 9px; color: var(--muted); margin-bottom: 2px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.day-n { font-size: 13px; font-weight: 600; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.day-pip { height: 3px; border-radius: 2px; margin: 3px 0 1px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.day-h { font-size: 9px; color: var(--muted); }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Nav row */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.nav-lbl { flex: 1; text-align: center; font-size: 15px; font-weight: 600; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Color swatches */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.swatches { display: flex; gap: 8px; flex-wrap: wrap; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.sw { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.sw.sel { border-color: var(--text); }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Section */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.section { display: none; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.section.active { display: block; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Login screen */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 32px; text-align: center; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.login-logo { font-family: var(--font); font-size: 28px; margin-bottom: 8px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.login-sub { font-size: 14px; color: var(--muted); margin-bottom: 40px; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.login-btn { padding: 14px 32px; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); font-size: 16px; cursor: pointer; width: 100%; max-width: 300px; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Toast */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 200; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.toast.show { opacity: 1; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Empty */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.empty { text-align: center; padding: 32px 0; color: var(--muted); font-size: 14px; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Date section header */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.date-hdr { font-size: 12px; color: var(--muted); font-weight: 600; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.04em; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>/* Range inputs */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>.range-card { background: var(--accent-light); border: 1px solid #b7dfc8; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }</span></p>
+<p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div id="login-screen" class="login"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="login-logo"&gt;Arbeitszeit&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="login-sub"&gt;Primarschulgemeinde Weinfelden&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;button class="login-btn" onclick="signIn()"&gt;Mit Microsoft anmelden&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;p style="font-size:12px;color:var(--muted);margin-top:16px"&gt;Deine Daten werden in deinem OneDrive gespeichert.&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div id="app-screen" style="display:none"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="topbar"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="topbar-title"&gt;Arbeitszeit&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="sync-btn" id="sync-btn" onclick="syncNow()"&gt;Synchronisieren&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="user-dot" id="user-dot" onclick="signOut()"&gt;?&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="content"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- ERFASSEN --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="section active" id="tab-erfassen"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="card"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Neuer Eintrag&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="field"&gt;&lt;label&gt;Datum&lt;/label&gt;&lt;input type="date" id="e-date"/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="field"&gt;&lt;label&gt;Stunden&lt;/label&gt;&lt;input type="number" id="e-hours" min="0.25" max="24" step="0.25" value="1"/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field"&gt;&lt;label&gt;Tätigkeitsbereich&lt;/label&gt;&lt;select id="e-area"&gt;&lt;/select&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field"&gt;&lt;label&gt;Beschreibung (optional)&lt;/label&gt;&lt;input type="text" id="e-desc" placeholder="Was hast du gemacht?"/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-primary" onclick="addEntry()"&gt;Eintrag speichern&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div id="today-entries"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- WOCHE --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="section" id="tab-woche"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="nav-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" onclick="wOff--;renderWoche()"&gt;‹&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;span class="nav-lbl" id="week-lbl"&gt;&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" onclick="wOff++;renderWoche()"&gt;›&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" onclick="wOff=0;renderWoche()"&gt;Heute&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="metric-row" id="week-metrics"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="week-grid" id="week-grid"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="card"&gt;&lt;div class="card-title"&gt;Details&lt;/div&gt;&lt;div id="week-detail"&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- MONAT --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="section" id="tab-monat"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="nav-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" onclick="mOff--;renderMonat()"&gt;‹&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;span class="nav-lbl" id="month-lbl"&gt;&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" onclick="mOff++;renderMonat()"&gt;›&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" onclick="mOff=0;renderMonat()"&gt;Heute&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="metric-row" id="month-metrics"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="card"&gt;&lt;div class="card-title"&gt;Nach Bereich&lt;/div&gt;&lt;div id="month-bars"&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- AUSWERTUNG --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="section" id="tab-auswertung"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="range-card"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="card-title" style="color:var(--accent)"&gt;Zeitraum-Analyse&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="field"&gt;&lt;label&gt;Von&lt;/label&gt;&lt;input type="date" id="r-from"/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="field"&gt;&lt;label&gt;Bis&lt;/label&gt;&lt;input type="date" id="r-to"/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-primary" onclick="renderRange()"&gt;Auswerten&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div id="range-result"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="card"&gt;&lt;div class="card-title"&gt;Alle Bereiche gesamt&lt;/div&gt;&lt;div id="all-bars"&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div style="display:flex;gap:8px;margin-top:4px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" style="flex:1;padding:11px" onclick="exportCSV()"&gt;CSV exportieren&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-sm" style="flex:1;padding:11px" onclick="exportPDF()"&gt;PDF exportieren&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- BEREICHE --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="section" id="tab-bereiche"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="card"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Neuer Bereich&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field"&gt;&lt;label&gt;Name&lt;/label&gt;&lt;input type="text" id="b-name" placeholder="z.B. Unterricht, Meetings..."/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field"&gt;&lt;label&gt;Farbe&lt;/label&gt;&lt;div class="swatches" id="swatches"&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="field"&gt;&lt;label&gt;Ziel Stunden/Woche (optional)&lt;/label&gt;&lt;input type="number" id="b-target" min="0" max="60" step="0.5" placeholder="0"/&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn-primary" onclick="addArea()"&gt;Bereich erstellen&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div id="area-list"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- Bottom nav --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;nav class="nav"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="nav-btn active" onclick="sw('erfassen',this)"&gt;&lt;span class="nav-icon"&gt;✏️&lt;/span&gt;Erfassen&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="nav-btn" onclick="sw('woche',this)"&gt;&lt;span class="nav-icon"&gt;📅&lt;/span&gt;Woche&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="nav-btn" onclick="sw('monat',this)"&gt;&lt;span class="nav-icon"&gt;📆&lt;/span&gt;Monat&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="nav-btn" onclick="sw('auswertung',this)"&gt;&lt;span class="nav-icon"&gt;📊&lt;/span&gt;Auswertung&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button class="nav-btn" onclick="sw('bereiche',this)"&gt;&lt;span class="nav-icon"&gt;🗂️&lt;/span&gt;Bereiche&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/nav&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div class="toast" id="toast"&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;script&gt;</span></p>
+<p class="p1"><span class="s1">// ── MSAL CONFIG ──────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">// WICHTIG: Ersetze CLIENT_ID_HIER mit deiner eigenen Client-ID!</span></p>
+<p class="p1"><span class="s1">const MSAL_CONFIG = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>auth: {</span></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">    </span>clientId: </span><b>34cbcc59-807f-4a08-bc6f-4a83d209d63a</b><span class="s2">,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>authority: 'https://login.microsoftonline.com/91020d46-40a5-45b1-97ee-0245a44da351',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>redirectUri: window.location.origin + window.location.pathname</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>},</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p1"><span class="s1">const SCOPES = ['Files.ReadWrite', 'User.Read'];</span></p>
+<p class="p1"><span class="s1">const FILE_NAME = 'arbeitszeit_daten.json';</span></p>
+<p class="p1"><span class="s1">const msalApp = new msal.PublicClientApplication(MSAL_CONFIG);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── STATE ────────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">const COLORS = ['#2d6a4f','#1a6b9e','#8b3a6b','#b5451b','#6b5ea8','#a07c20','#3a7d6b','#666660'];</span></p>
+<p class="p1"><span class="s1">let selColor = COLORS[0], wOff = 0, mOff = 0, isSyncing = false;</span></p>
+<p class="p1"><span class="s1">let S = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>areas: [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{id:'a1', name:'Unterricht', color:'#2d6a4f', target:20},</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{id:'a2', name:'Meetings', color:'#1a6b9e', target:5},</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>{id:'a3', name:'Administration', color:'#8b3a6b', target:3}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>],</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>entries: []</span></p>
+<p class="p1"><span class="s1">};</span></p>
+<p class="p1"><span class="s1">let accessToken = null;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── AUTH ─────────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">async function signIn() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const resp = await msalApp.loginPopup({ scopes: SCOPES });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>await afterLogin(resp.account);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>} catch(e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast('Anmeldung fehlgeschlagen: ' + e.message);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">async function afterLogin(account) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>msalApp.setActiveAccount(account);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const initials = account.name ? account.name.split(' ').map(n=&gt;n[0]).join('').slice(0,2).toUpperCase() : '?';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('user-dot').textContent = initials;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('login-screen').style.display = 'none';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('app-screen').style.display = 'block';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>await getToken();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>await loadFromOneDrive();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>init();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">async function getToken() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const account = msalApp.getActiveAccount();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if (!account) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const resp = await msalApp.acquireTokenSilent({ scopes: SCOPES, account });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>accessToken = resp.accessToken;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>} catch(e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const resp = await msalApp.acquireTokenPopup({ scopes: SCOPES });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>accessToken = resp.accessToken;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function signOut() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if (!confirm('Abmelden?')) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>msalApp.logoutPopup();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('login-screen').style.display = 'flex';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('app-screen').style.display = 'none';</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── ONEDRIVE SYNC ────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">async function loadFromOneDrive() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if (!accessToken) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const res = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${FILE_NAME}:/content`, {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>headers: { Authorization: 'Bearer ' + accessToken }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if (res.ok) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const data = await res.json();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (data &amp;&amp; data.areas) S = data;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>toast('Daten geladen ✓');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>} catch(e) { /* Datei existiert noch nicht – kein Problem */ }</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">async function saveToOneDrive() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if (!accessToken) { save(); return; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>save();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>isSyncing = true;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('sync-btn').textContent = 'Synchronisiert…';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('sync-btn').classList.add('syncing');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>await getToken();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${FILE_NAME}:/content`, {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>method: 'PUT',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>body: JSON.stringify(S)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast('Gespeichert in OneDrive ✓');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>} catch(e) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast('Offline – lokal gespeichert');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>isSyncing = false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('sync-btn').textContent = 'Synchronisieren';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('sync-btn').classList.remove('syncing');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">async function syncNow() { await saveToOneDrive(); }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── LOCAL STORAGE FALLBACK ───────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function save() { try { localStorage.setItem('aze_ms', JSON.stringify(S)); } catch(e) {} }</span></p>
+<p class="p1"><span class="s1">function loadLocal() { try { const s = localStorage.getItem('aze_ms'); if(s) S = JSON.parse(s); } catch(e) {} }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── INIT ─────────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function init() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('e-date').value = today();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const now = new Date();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('r-from').value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('r-to').value = today();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>initSwatches();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>updateSelects();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>renderToday();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>renderAreas();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── HELPERS ──────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function today() { return new Date().toISOString().slice(0,10); }</span></p>
+<p class="p1"><span class="s1">function area(id) { return S.areas.find(a =&gt; a.id === id); }</span></p>
+<p class="p1"><span class="s1">function fmtDate(str) { return new Date(str+'T00:00:00').toLocaleDateString('de-CH',{weekday:'short',day:'numeric',month:'short'}); }</span></p>
+<p class="p1"><span class="s1">const DAY = ['Mo','Di','Mi','Do','Fr','Sa','So'];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function toast(msg) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const el = document.getElementById('toast');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>el.textContent = msg;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>el.classList.add('show');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>setTimeout(() =&gt; el.classList.remove('show'), 2500);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function sw(tab, btn) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('active'));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('tab-'+tab).classList.add('active');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.querySelectorAll('.nav-btn').forEach(b =&gt; b.classList.remove('active'));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(btn) btn.classList.add('active');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(tab==='woche') renderWoche();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(tab==='monat') renderMonat();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(tab==='auswertung') renderAuswertung();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(tab==='bereiche') renderAreas();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(tab==='erfassen') renderToday();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── BEREICHE ─────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function initSwatches() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('swatches').innerHTML = COLORS.map(c =&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`&lt;div class="sw${c===selColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}',this)"&gt;&lt;/div&gt;`</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>).join('');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function pickColor(c, el) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>selColor = c;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.querySelectorAll('.sw').forEach(s =&gt; s.classList.remove('sel'));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>el.classList.add('sel');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function addArea() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const n = document.getElementById('b-name').value.trim();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!n) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const t = parseFloat(document.getElementById('b-target').value) || 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>S.areas.push({id:'a'+Date.now(), name:n, color:selColor, target:t});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('b-name').value = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('b-target').value = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>saveToOneDrive(); renderAreas(); updateSelects();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function delArea(id) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!confirm('Bereich löschen?')) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>S.areas = S.areas.filter(a =&gt; a.id !== id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>saveToOneDrive(); renderAreas(); updateSelects();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function renderAreas() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>initSwatches();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const el = document.getElementById('area-list');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!S.areas.length) { el.innerHTML = '&lt;div class="empty"&gt;Noch keine Bereiche.&lt;/div&gt;'; return; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>el.innerHTML = S.areas.map(a =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const h = S.entries.filter(e =&gt; e.areaId===a.id).reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return `&lt;div class="card" style="padding:12px 16px;margin-bottom:8px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div style="display:flex;align-items:center;gap:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="width:10px;height:10px;border-radius:50%;background:${a.color};flex-shrink:0"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="flex:1"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div style="font-size:14px"&gt;${a.name}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div style="font-size:12px;color:var(--muted)"&gt;${h.toFixed(1)} h gesamt${a.target?` · Ziel ${a.target} h/Wo`:''}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="del-btn" onclick="delArea('${a.id}')"&gt;×&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}).join('');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function updateSelects() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const opts = S.areas.map(a =&gt; `&lt;option value="${a.id}"&gt;${a.name}&lt;/option&gt;`).join('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('e-area').innerHTML = opts;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const ra = document.getElementById('r-area');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(ra) ra.innerHTML = '&lt;option value=""&gt;Alle&lt;/option&gt;' + opts;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── EINTRÄGE ─────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function addEntry() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const date = document.getElementById('e-date').value || today();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const areaId = document.getElementById('e-area').value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const hours = parseFloat(document.getElementById('e-hours').value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const desc = document.getElementById('e-desc').value.trim();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!areaId || !hours) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>S.entries.push({id:'e'+Date.now(), date, areaId, hours, desc});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('e-hours').value = '1';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('e-desc').value = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>saveToOneDrive(); renderToday();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function delEntry(id) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>S.entries = S.entries.filter(e =&gt; e.id !== id);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>saveToOneDrive(); renderToday();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function renderToday() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const el = document.getElementById('today-entries');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const t = today();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const es = S.entries.filter(e =&gt; e.date===t).sort((a,b)=&gt;b.id.localeCompare(a.id));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!es.length) { el.innerHTML=''; return; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const tot = es.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>el.innerHTML = `&lt;div class="card"&gt;&lt;div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="card-title" style="margin:0"&gt;Heute&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div style="font-size:14px;font-weight:600"&gt;${tot.toFixed(1)} h&lt;/div&gt;&lt;/div&gt;` +</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>es.map(e =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const a = area(e.areaId); if(!a) return '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return `&lt;div class="entry"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="entry-dot" style="background:${a.color}"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="entry-body"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="entry-name"&gt;${a.name}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>${e.desc ? `&lt;div class="entry-sub"&gt;${e.desc}&lt;/div&gt;` : ''}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="entry-h"&gt;${e.hours.toFixed(2)} h&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="del-btn" onclick="delEntry('${e.id}')"&gt;×&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}).join('') + '&lt;/div&gt;';</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── WOCHENANSICHT ────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function getWeekDates(off) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1 + off*7);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>return Array.from({length:7},(_,i)=&gt;{ const x=new Date(d); x.setDate(d.getDate()+i); return x.toISOString().slice(0,10); });</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">function renderWoche() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const dates = getWeekDates(wOff);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const d0=new Date(dates[0]), d1=new Date(dates[6]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('week-lbl').textContent =</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`${d0.toLocaleDateString('de-CH',{day:'numeric',month:'short'})} – ${d1.toLocaleDateString('de-CH',{day:'numeric',month:'short'})}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const t = today();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const inW = S.entries.filter(e=&gt;dates.includes(e.date));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const tot = inW.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const dSet = new Set(inW.map(e=&gt;e.date)).size;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('week-metrics').innerHTML = `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${tot.toFixed(1)}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Stunden&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${dSet}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Tage&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${dSet?(tot/dSet).toFixed(1):0}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Ø/Tag&lt;/div&gt;&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('week-grid').innerHTML = dates.map((date,i) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const es = S.entries.filter(e=&gt;e.date===date);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const dh = es.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const areas = S.areas.filter(a=&gt;es.some(e=&gt;e.areaId===a.id));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return `&lt;div class="day-cell${date===t?' today':''}"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="day-nm"&gt;${DAY[i]}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="day-n"&gt;${new Date(date+'T00:00').getDate()}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>${areas.slice(0,2).map(a=&gt;`&lt;div class="day-pip" style="background:${a.color}"&gt;&lt;/div&gt;`).join('')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>${dh&gt;0?`&lt;div class="day-h"&gt;${dh.toFixed(1)}h&lt;/div&gt;`:''}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}).join('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const detail = inW.sort((a,b)=&gt;b.date.localeCompare(a.date));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!detail.length) { document.getElementById('week-detail').innerHTML='&lt;div class="empty"&gt;Keine Einträge diese Woche.&lt;/div&gt;'; return; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const byDate = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>detail.forEach(e=&gt;{ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('week-detail').innerHTML = Object.keys(byDate).sort((a,b)=&gt;b.localeCompare(a)).map(date =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const es=byDate[date], dt=es.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return `&lt;div class="date-hdr"&gt;${fmtDate(date)} · ${dt.toFixed(1)} h&lt;/div&gt;` +</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>es.map(e=&gt;{ const a=area(e.areaId); if(!a) return '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return `&lt;div class="entry"&gt;&lt;div class="entry-dot" style="background:${a.color}"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="entry-body"&gt;&lt;div class="entry-name" style="font-size:13px"&gt;${a.name}${e.desc?` – ${e.desc}`:''}&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>&lt;div class="entry-h"&gt;${e.hours.toFixed(2)} h&lt;/div&gt;&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}).join('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}).join('');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── MONATSANSICHT ────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function renderMonat() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const now = new Date(); now.setMonth(now.getMonth()+mOff);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const y=now.getFullYear(), m=now.getMonth();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('month-lbl').textContent =</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>new Date(y,m,1).toLocaleDateString('de-CH',{month:'long',year:'numeric'});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const prefix = `${y}-${String(m+1).padStart(2,'0')}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const inM = S.entries.filter(e=&gt;e.date.startsWith(prefix));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const tot = inM.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const dSet = new Set(inM.map(e=&gt;e.date)).size;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('month-metrics').innerHTML = `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${tot.toFixed(1)}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Stunden&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${dSet}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Tage&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${dSet?(tot/dSet).toFixed(1):0}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Ø/Tag&lt;/div&gt;&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const byArea = {}; S.areas.forEach(a=&gt;byArea[a.id]=0); inM.forEach(e=&gt;{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const sorted = S.areas.map(a=&gt;({a,h:byArea[a.id]||0})).sort((x,y2)=&gt;y2.h-x.h);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const maxH = Math.max(...sorted.map(x=&gt;x.h),1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('month-bars').innerHTML = sorted.map(({a,h})=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const pct = Math.round(tot?h/tot*100:0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return `&lt;div class="bar-item"&gt;&lt;div class="bar-top"&gt;&lt;span style="display:flex;align-items:center;gap:6px"&gt;&lt;span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"&gt;&lt;/span&gt;${a.name}&lt;/span&gt;&lt;span style="color:var(--muted)"&gt;${h.toFixed(1)} h (${pct}%)&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="bar-track"&gt;&lt;div class="bar-fill" style="width:${Math.round(h/maxH*100)}%;background:${a.color}"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}).join('') || '&lt;div class="empty"&gt;Keine Einträge.&lt;/div&gt;';</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── AUSWERTUNG ───────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function renderAuswertung() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const byArea = {}; S.areas.forEach(a=&gt;byArea[a.id]=0); S.entries.forEach(e=&gt;{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const tot = S.entries.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const sorted = S.areas.map(a=&gt;({a,h:byArea[a.id]||0})).sort((x,y)=&gt;y.h-x.h);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const maxH = Math.max(...sorted.map(x=&gt;x.h),1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('all-bars').innerHTML = sorted.map(({a,h})=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const pct=Math.round(tot?h/tot*100:0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return `&lt;div class="bar-item"&gt;&lt;div class="bar-top"&gt;&lt;span style="display:flex;align-items:center;gap:6px"&gt;&lt;span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"&gt;&lt;/span&gt;${a.name}&lt;/span&gt;&lt;span style="color:var(--muted)"&gt;${h.toFixed(1)} h (${pct}%)&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="bar-track"&gt;&lt;div class="bar-fill" style="width:${Math.round(h/maxH*100)}%;background:${a.color}"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}).join('') || '&lt;div class="empty"&gt;Noch keine Einträge.&lt;/div&gt;';</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function renderRange() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const from = document.getElementById('r-from').value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const to = document.getElementById('r-to').value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(!from||!to) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>let es = S.entries.filter(e=&gt;e.date&gt;=from&amp;&amp;e.date&lt;=to);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const tot = es.reduce((s,e)=&gt;s+e.hours,0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const dSet = new Set(es.map(e=&gt;e.date)).size;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const diffDays = Math.round((new Date(to)-new Date(from))/(1000*60*60*24))+1;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const byArea={}; S.areas.forEach(a=&gt;byArea[a.id]=0); es.forEach(e=&gt;{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const maxH = Math.max(...Object.values(byArea),1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>document.getElementById('range-result').innerHTML = `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="metric-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${tot.toFixed(1)}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Stunden&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${dSet}/${diffDays}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Tage erf./ges.&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="metric"&gt;&lt;div class="metric-val"&gt;${dSet?(tot/dSet).toFixed(1):0}&lt;/div&gt;&lt;div class="metric-lbl"&gt;Ø/Tag&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="card"&gt;&lt;div class="card-title"&gt;Bereiche im Zeitraum&lt;/div&gt;` +</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>S.areas.map(a=&gt;{ const h=byArea[a.id]||0; const pct=Math.round(tot?h/tot*100:0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return `&lt;div class="bar-item"&gt;&lt;div class="bar-top"&gt;&lt;span style="display:flex;align-items:center;gap:6px"&gt;&lt;span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"&gt;&lt;/span&gt;${a.name}&lt;/span&gt;&lt;span style="color:var(--muted)"&gt;${h.toFixed(1)} h (${pct}%)&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="bar-track"&gt;&lt;div class="bar-fill" style="width:${Math.round(h/maxH*100)}%;background:${a.color}"&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}).join('') + '&lt;/div&gt;';</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── EXPORT ───────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">function exportCSV() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const rows = [['Datum','Bereich','Stunden','Beschreibung']];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>[...S.entries].sort((a,b)=&gt;a.date.localeCompare(b.date)).forEach(e =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const a = area(e.areaId);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>rows.push([e.date, a?a.name:'', e.hours.toFixed(2), e.desc||'']);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const csv = rows.map(r=&gt;r.map(c=&gt;'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const url = URL.createObjectURL(blob);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const a = document.createElement('a'); a.href=url; a.download='arbeitszeit.csv'; a.click();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>URL.revokeObjectURL(url);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function exportPDF() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>// Ohne externe Bibliothek: einfaches Drucken</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const lines = [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>lines.push('&lt;html&gt;&lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;style&gt;body{font-family:sans-serif;padding:24px;font-size:13px}h1{font-size:18px;margin-bottom:4px}h2{font-size:14px;margin:20px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:5px 8px;border-bottom:1px solid #eee}th{font-weight:600;color:#555}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>lines.push(`&lt;h1&gt;Arbeitszeiterfassung&lt;/h1&gt;&lt;p style="color:#888"&gt;Exportiert: ${new Date().toLocaleDateString('de-CH')}&lt;/p&gt;`);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>lines.push('&lt;h2&gt;Zusammenfassung&lt;/h2&gt;&lt;table&gt;&lt;tr&gt;&lt;th&gt;Bereich&lt;/th&gt;&lt;th&gt;Stunden&lt;/th&gt;&lt;/tr&gt;');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const byArea={}; S.areas.forEach(a=&gt;byArea[a.id]=0); S.entries.forEach(e=&gt;{ if(byArea[e.areaId]!==undefined) byArea[e.areaId]+=e.hours; });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>S.areas.forEach(a=&gt;lines.push(`&lt;tr&gt;&lt;td&gt;${a.name}&lt;/td&gt;&lt;td&gt;${(byArea[a.id]||0).toFixed(1)} h&lt;/td&gt;&lt;/tr&gt;`));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>lines.push(`&lt;tr&gt;&lt;td&gt;&lt;strong&gt;Gesamt&lt;/strong&gt;&lt;/td&gt;&lt;td&gt;&lt;strong&gt;${S.entries.reduce((s,e)=&gt;s+e.hours,0).toFixed(1)} h&lt;/strong&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;`);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>lines.push('&lt;h2&gt;Alle Einträge&lt;/h2&gt;&lt;table&gt;&lt;tr&gt;&lt;th&gt;Datum&lt;/th&gt;&lt;th&gt;Bereich&lt;/th&gt;&lt;th&gt;Stunden&lt;/th&gt;&lt;th&gt;Beschreibung&lt;/th&gt;&lt;/tr&gt;');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>[...S.entries].sort((a,b)=&gt;a.date.localeCompare(b.date)).forEach(e=&gt;{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const a=area(e.areaId);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>lines.push(`&lt;tr&gt;&lt;td&gt;${e.date}&lt;/td&gt;&lt;td&gt;${a?a.name:''}&lt;/td&gt;&lt;td&gt;${e.hours.toFixed(2)}&lt;/td&gt;&lt;td&gt;${e.desc||''}&lt;/td&gt;&lt;/tr&gt;`);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>lines.push('&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const w = window.open('','_blank');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>w.document.write(lines.join(''));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>w.document.close();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>w.print();</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">// ── STARTUP ──────────────────────────────────────────────────</span></p>
+<p class="p1"><span class="s1">loadLocal();</span></p>
+<p class="p1"><span class="s1">(async () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>await msalApp.initialize();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>const accounts = msalApp.getAllAccounts();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>if(accounts.length &gt; 0) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>await afterLogin(accounts[0]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p1"><span class="s1">})();</span></p>
+<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
